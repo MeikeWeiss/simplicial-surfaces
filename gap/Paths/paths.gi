@@ -978,6 +978,39 @@ InstallMethod(IsWaist, "for a complex and a vertex-edge path",
         end
 );
 
+InstallMethod(HasThreeWaist, "for a twisted polygonal complex",
+    [IsTwistedPolygonalComplex],
+    function(surface)
+
+    local w,voe1,voe2,voe3,v1,v2,v3,eof,waists,verticesOfEdges,facesOfEdges;
+    verticesOfEdges:=VerticesOfEdges(surface);
+    facesOfEdges:=FacesOfEdges(surface);
+    waists:=Combinations(InnerEdges(surface),3);
+    waists:=Filtered(waists,w->Length(Union(verticesOfEdges{w}))=3);
+    waists:=Filtered(waists,w->Length(Union(facesOfEdges{w}))=6);
+    for w in waists do 
+        voe1:=verticesOfEdges[w[1]];
+        voe2:=verticesOfEdges[w[2]];
+        voe3:=verticesOfEdges[w[3]];
+        v1:=Intersection(voe1,voe2)[1];
+        v2:=Intersection(voe2,voe3)[1];
+        v3:=Intersection(voe1,voe3)[1];
+        if Length(Set([v1,v2,v3]))=3 then 
+            return true;
+        fi;
+    od;
+    return false;
+end
+);
+
+InstallMethod(HasNoThreeWaist, "for a twisted polygonal complex",
+    [IsTwistedPolygonalComplex],
+    function(surface)
+
+    return not HasThreeWaist(surface);
+end
+);
+
 
 InstallMethod( AllTwoWaistsOfComplex, "for a twisted polygonal complex",
     [IsTwistedPolygonalComplex],

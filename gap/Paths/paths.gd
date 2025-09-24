@@ -1246,6 +1246,26 @@ DeclareAttribute( "ViewInformation", IsEdgeFacePath );
 DeclareOperation("IsWaist",[IsTwistedPolygonalComplex, IsVertexEdgePath]);
 #! @EndGroup
 
+
+#! @BeginGroup HasThreeWaist
+#! @Description
+#! Return whether the given path <A>complex</A> has a waist of length 3.
+#! The definition of a waist is given at the beginning of section <Ref Sect="Section_Waists"/>.
+#!
+#! For example, consider the simplicial surface from the start of section <Ref Sect="Section_Waists"/>.
+#! The surface has a 3-waist:
+#! @BeginExampleSession
+#! gap> HasThreeWaist(tripleTetra);
+#! true
+#! @EndExampleSession
+#!
+#! @Returns true or false
+#! @Arguments complex
+DeclareOperation("HasThreeWaist",[IsTwistedPolygonalComplex]);
+DeclareOperation("HasNoThreeWaist",[IsTwistedPolygonalComplex]);
+#! @EndGroup
+
+
 #! @BeginGroup AllTwoWaistsOfWaistsOfComplex
 #! @Description
 #! Return the set of all waists of length 2 contained in the given

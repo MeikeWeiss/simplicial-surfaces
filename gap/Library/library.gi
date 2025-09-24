@@ -2,7 +2,7 @@
 
 BindGlobal( "__SIMPLICIAL_WriteSurfaceListIntoFile",
     function(file, surfaces)
-        local fileOut, surf, string, veString, efString;
+        local fileOut, surf, string, vofString;
 
         fileOut := OutputTextFile(file, false); # Replace old file
         SetPrintFormattingStatus(fileOut, false);
@@ -10,17 +10,11 @@ BindGlobal( "__SIMPLICIAL_WriteSurfaceListIntoFile",
             if not IsSimplicialSurface(surf) then
                 Error("Should not have called this method. I hope the file was not important..");
             fi;
-            AppendTo(fileOut, "SimplicialSurfaceByDownwardIncidenceNC(");
 
-            veString := String(VerticesOfEdges(surf));
-            RemoveCharacters(veString, " \n\t\r"); # Removes all whitespace
-            AppendTo(fileOut, veString);
-            AppendTo(fileOut, ",");
-
-            efString := String(EdgesOfFaces(surf));
-            RemoveCharacters(efString, " \n\t\r"); # Removes all whitespace
-            AppendTo(fileOut, efString);
-            AppendTo(fileOut, ")\n");
+            vofString := String(UmbrellaDescriptorOfSurface(surf));
+            RemoveCharacters(vofString, " \n\t\r"); # Removes all whitespace
+            AppendTo(fileOut, vofString);
+            AppendTo(fileOut, "\n");
         od;
         CloseStream(fileOut);
     end
@@ -229,7 +223,9 @@ BindGlobal( "__SIMPLICIAL_LibraryParseString",
         split := SplitString(string, "", "|\n");
         if Length(split) = 1 then
             # encode a surface
-            surf := EvalString(split[1]);
+            #surf := EvalString(split[1]);  # change!!!!!!!!!!
+            #surf := SimplicialSurfaceByVerticesInFaces(EvalString(split[1]));
+            surf := SimplicialSurfaceByUmbrellaDescriptor(EvalString(split[1]));
             return surf;
         elif Length(split) = 2 then
             # encode different location
@@ -281,7 +277,6 @@ BindGlobal("__SIMPLICIAL_ReadFile",
             pos := pos + 1;
             line := ReadLine(fileIn);
         od;
-
         return result;
     end
 );
@@ -582,7 +577,6 @@ InstallGlobalFunction( "__SIMPLICIAL_AccessLibraryRecursive",
                 CloseStream(fileIn);
             od;
         fi;
-
         return result;
     end
 );
@@ -651,6 +645,7 @@ InstallGlobalFunction( "AllSimplicialSurfaces",
     function(arg)
         local trueArg;
 
+        # TODO include number of vertices
         trueArg := __SIMPLICIAL_ParseLibraryQuery(arg, "AllSimplicialSurfaces");
         trueArg := Concatenation( [[IsSimplicialSurface,true]], trueArg );
         return __SIMPLICIAL_AccessLibrary(trueArg, "");
@@ -663,10 +658,20 @@ InstallGlobalFunction( "AllSimplicialSurfaces",
 
 InstallGlobalFunction( "AllSimplicialSpheres",
     function(arg)
-        local trueArg;
+        local trueArg, spheres;
 
         trueArg := __SIMPLICIAL_ParseLibraryQuery(arg, "AllSimplicialSpheres");
-        return __SIMPLICIAL_AccessLibrary(trueArg, "simplicial spheres/");
+        spheres:= __SIMPLICIAL_AccessLibrary(trueArg, "simplicial spheres/");
+        if IsVertexFaithful in arg then
+            spheres:=Filtered(spheres,s->IsVertexFaithful(s));
+        fi;
+        if HasNoThreeWaist in arg then
+            spheres:=Filtered(spheres,s-> not HasThreeWaist(s));
+        fi;
+        if HasThreeWaist in arg then
+            spheres:=Filtered(spheres,s->HasThreeWaist(s));
+        fi;
+        return spheres;
     end
 );
 
@@ -727,10 +732,7 @@ BindGlobal("__SIMPLICIAL_LibraryRecogUniqueResult",
 
 InstallGlobalFunction( "AllPlatonicSurfaces",
     function(arg)
-        local trueArg;
-
-        trueArg := __SIMPLICIAL_ParseLibraryQuery(arg, "AllPlatonicSurfaces");
-        return __SIMPLICIAL_AccessLibrary(trueArg, "platonic surfaces/");
+        return [Tetrahedron(),Cube(),Octahedron(),Dodecahedron(),Icosahedron()];
     end
 );
 
