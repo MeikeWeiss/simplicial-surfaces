@@ -1456,6 +1456,54 @@ InstallMethod( IsNotEdgeRamified,
 AddPropertyIncidence( SIMPLICIAL_ATTRIBUTE_SCHEDULER,
     "IsNotEdgeRamified", "RamifiedEdges");
 
+__SIMPLICIAL_AddTwistedAttribute( IsFacePure );
+InstallMethod( IsFacePure, 
+    "for a twisted polygonal complex with FacesOfVertices and FacesOfEdges",
+    [IsTwistedPolygonalComplex and HasFacesOfVertices and HasFacesOfEdges],
+    function(complex)
+        local faces;
+
+        for faces in FacesOfVertices(complex) do
+            if Length(faces) = 0 then
+                return false;
+            fi;
+        od;
+
+        for faces in FacesOfEdges(complex) do
+            if Length(faces) = 0 then
+                return false;
+            fi;
+        od;
+
+        return true;
+    end
+);
+AddPropertyIncidence( SIMPLICIAL_ATTRIBUTE_SCHEDULER,
+    "IsFacePure", ["FacesOfVertices", "FacesOfEdges"]);
+
+
+__SIMPLICIAL_AddTwistedAttribute( IsNotTwisted );
+InstallMethod( IsNotTwisted, "for a twisted polygonal complex",
+    [IsTwistedPolygonalComplex and HasFaces and HasChambersOfFaces and HasVerticesOfChambers and HasEdgesOfChambers],
+    function(complex)
+        local f, chamb, verts, edges;
+
+        for f in Faces(complex) do
+            chamb := ChambersOfFaces(complex)[f];
+            verts := Set( VerticesOfChambers(complex){chamb} );
+            if 2*Length(verts) <> Length(chamb) then
+                return false;
+            fi;
+            edges := Set( EdgesOfChambers(complex){chamb} );
+            if 2*Length(edges) <> Length(chamb) then
+                return false;
+            fi;
+        od;
+        return true;
+    end
+);
+AddPropertyIncidence(SIMPLICIAL_ATTRIBUTE_SCHEDULER,
+   "IsNotTwisted", ["Faces", "ChambersOfFaces", "VerticesOfChambers", "EdgesOfChambers"], ["IsTwistedPolygonalComplex"]);
 
 ##
 ##      End of edge types
