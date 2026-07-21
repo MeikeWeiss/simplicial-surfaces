@@ -283,14 +283,23 @@ __SIMPLICIAL_AddPolygonalAttribute(UmbrellaPathsOfVertices);
 ## Implement the immediate methods for inferences about the complex
 ##
 InstallImmediateMethod( IsNotVertexRamified, 
-    "for a polygonal complex that has UmbrellaPathsOfVertices",
-    IsPolygonalComplex and HasUmbrellaPathsOfVertices, 0,
+    "for a polygonal complex that has UmbrellaPathsOfVertices and VerticesAttributeOfComplex",
+    IsPolygonalComplex and HasUmbrellaPathsOfVertices and HasVerticesAttributeOfComplex, 0,
     function(complex)
-        return not fail in UmbrellaPathsOfVertices(complex);
+        local paths, v;
+
+        paths := UmbrellaPathsOfVertices(complex);
+
+        for v in VerticesAttributeOfComplex(complex) do
+            if paths[v] = fail then
+                return false;
+            fi;
+        od;
+        return true;
     end
 );
 AddPropertyIncidence(SIMPLICIAL_ATTRIBUTE_SCHEDULER,
-    "IsNotVertexRamified", "UmbrellaPathsOfVertices", ["IsPolygonalComplex"]);
+    "IsNotVertexRamified", ["UmbrellaPathsOfVertices", "VerticesAttributeOfComplex"], ["IsPolygonalComplex"]);
 
 InstallImmediateMethod( IsNotEdgeRamified,
     "for a polygonal complex that has UmbrellaPathPartitionsOfVertices",
@@ -465,15 +474,23 @@ InstallMethod( UmbrellaPathPartitionsOfVertices,
         HasEdgesOfVertices and HasEdgesOfFaces and HasFacesOfEdges and 
         HasVerticesOfEdges and HasRamifiedEdges],
     function(ramSurf)
-        local faceEdgePathPart, vertex, incidentEdges, paths,
+        local faceEdgePathPart, vertex, incidentEdges, paths, facesOfEdges,
             edgeStart, possFaces, rightFinished, leftFinished, backFace, path,
             nextEdge, nextFace, usedEdges;
 
         faceEdgePathPart := [];
+        facesOfEdges := FacesOfEdges(ramSurf);
 
         for vertex in VerticesAttributeOfComplex(ramSurf) do
             incidentEdges := EdgesOfVertices(ramSurf)[vertex];
             paths := [];
+
+            # Ignore edges that are not incident to any face.
+            incidentEdges := Filtered(incidentEdges, e -> Length(facesOfEdges[e]) > 0); 
+            
+            if Length(incidentEdges) = 0 then
+                paths := fail;
+            fi;
 
             while Length(incidentEdges) > 0 do
                 # If the path is not closed, we can't hope to find the correct 
